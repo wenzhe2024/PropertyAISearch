@@ -1,8 +1,8 @@
 import openai
 from config.config import Config
 
-class OpenAIWrapper:
-    def __init__(self, model="GPT-4o", max_tokens=300, temperature=0.7):
+class LLM:
+    def __init__(self, model="gpt-4o", max_tokens=300, temperature=0.7):
         """
         初始化 OpenAI API Wrapper。
 
@@ -16,25 +16,42 @@ class OpenAIWrapper:
         self.max_tokens = max_tokens
         self.temperature = temperature
 
-    def query(self, prompt):
+    def query(self, user_query, chat_history=[]):
         """
-        使用给定的 prompt 调用 OpenAI API，并返回响应。
+        使用给定的用户输入和对话历史，调用 OpenAI Chat API，并返回 GPT-4 的响应。
 
         参数:
-        - prompt (str): 用户提供的输入或查询。
+        - user_query (str): 用户的查询文本。
+        - chat_history (list): 对话历史，是一个包含字典的列表，每个字典代表一条消息。
 
         返回:
         - str: 模型生成的响应文本。
         """
+        # 将用户的查询追加到对话历史中
+        chat_history.append({"role": "user", "content": user_query})
+
         try:
-            response = openai.Completion.create(
-                engine=self.model,
-                prompt=prompt,
+            # 使用 OpenAI Chat API 获取回复
+            response = openai.ChatCompletion.create(
+                model=self.model,
+                messages=chat_history,
                 max_tokens=self.max_tokens,
                 temperature=self.temperature
             )
-            # 返回模型的响应文本
-            return response.choices[0].text.strip()
+
+            # 获取并返回模型的响应文本
+            reply = response['choices'][0]['message']['content'].strip()
+
+            # 将模型的回复追加到对话历史中
+            chat_history.append({"role": "assistant", "content": reply})
+
+            return reply
         except openai.error.OpenAIError as e:
             print("OpenAI API 请求出错:", e)
             return None
+
+
+if __name__ == "__main__":
+    llm = LLM()
+    print (llm.query("利用gpt4 chat model回复用户的query，写代码"))
+

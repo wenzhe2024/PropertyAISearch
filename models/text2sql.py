@@ -1,51 +1,60 @@
-from tools.db_connector import DatabaseConnector
+import openai
+from utils.intention_detector import detect_intention
+from utils.load_schema import extract_table_definition
+from models.llm_wrapper import LLM
+from sqlalchemy import text
+import re
 
-class Text2SQL:
-    def __init__(self):
-        self.db = DatabaseConnector()
 
-    def execute(self, query):
-        # 将自然语言转换为SQL并执行
-        sql_query = self.convert_to_sql(query)
-        result = self.db.query(sql_query)
-        return result
+def filter_schema(related_tables):
+    """
+    根据给定的表名，抽取相关表的描述和字段描述。
 
-    def convert_to_sql(self, query):
-        # 使用LLM生成SQL查询语句
-        return f"生成的SQL语句 for: {query}"  # 这里需要实际的转换逻辑
+    参数：
+    - related_tables(list)：list of 表明
 
-    import openai
+    返回：
+    - str: 表的描述和字段描述，作为大模型调用的上下文。
+    """
+    schema_content = extract_table_definition()
+    extracted_info = []
 
-    # 假设我们使用 OpenAI GPT-3 API
-    # 设置 OpenAI API Key
-    openai.api_key = "your_openai_api_key"
+    for table in related_tables:
+        if table in schema_content:
+            table_info = schema_content[table]
+            # 格式化输出，每个表的内容开头带 "## 表" 以保持结构一致
+            extracted_info.append(f"{table_info.strip()}")
 
-    # 加载数据库结构定义
-    def load_schema_definition(file_path="schema_definition.txt"):
-        with open(file_path, "r") as file:
-            schema_definition = file.read()
-        return schema_definition
+    return "\n\n".join(extracted_info)
 
-    # Text2SQL 转换函数
-    def text_to_sql(question, schema_definition):
-        prompt = f"""
-        You are a highly intelligent SQL assistant. Below is the database schema definition:
 
-        {schema_definition}
+def text_to_sql(question, related_tables):
+    schema_definition = filter_schema(related_tables)
+    #print (schema_definition)
+    prompt = f"""
+    你是一个智能的房产领域SQLite助手。 把用户的问题转换为SQLite语句。 下面是房产数据库的表结构定义：
+    
+    {schema_definition}
+    
+    根据上述表结构，请为以下问题生成一个 SQLite 查询：
 
-        Based on this schema, generate an SQL query for the following question:
-        Question: "{question}"
+    问题：{question}
 
-        SQL Query:
-        """
+    SQLite 查询：
+    """
+    #print ("prompt is: ", prompt)
 
-        # 使用 OpenAI GPT-3 生成 SQL 查询
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=150,
-            temperature=0
-        )
+    llm = LLM()
 
-        sql_query = response.choices[0].text.strip()
-        return sql_query
+    try:
+        response = llm.query(prompt)
+        response = response.replace("sql\n", "", 1).strip()
+        response = response.strip('```')
+
+        #print ("获取到的sql为：\n", response)
+        #sql_query = response.strip()
+        return text(response)
+
+    except openai.error.OpenAIError as e:
+        print(f"意图检测失败: {e}")
+        return []  # 如果出错，返回空列表

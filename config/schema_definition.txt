@@ -1,0 +1,77 @@
+# 数据库表结构定义
+
+## 表：properties
+- 描述：存储房产的信息，包括其位置、类型、估价和特征。
+- 字段：
+  - property_id (INTEGER)：每个房产的唯一标识符。
+  - cateogry (TEXT): 房产类型（类别型，可选值为 "买房"、"全新房"、"最近成交"、"估价"、"房产开发"、"租房"）
+  - price (REAL)：房产的价格，范围从 $0 到 $10,000,000，以 $50,000 为单位进行增量选择。
+  - property_type (TEXT)：房产类型（类别型，可选值为 “独立屋”、“公寓”、“单元房”、“城市屋”、“排房”、“自住投资”、“乡村别墅”、“乡村住宅建地”、“建地”）。
+  - building_style (TEXT)：建筑风格（类别型，可选值为 “当代风格”、“豪华现代风”、“传统风格”、“乡村风”、“海滩热带风”、“维多利亚地中海”）。
+  - bedrooms (INTEGER)：房产的卧室数量，常见选项为 1、2、3、4、5+，5+表示 5间或者更多的卧室。
+  - bathrooms (INTEGER)：房产的浴室数量，常见选项为 1、2、3、4、5+，5+ 表示 5 间或更多的浴室。
+  - parking_spaces (INTEGER)：房产的车位数量，常见选项为 1、2、3、4、5+，5+ 表示 5 个或更多的车位。
+  - pricing_method (TEXT)：价格方式（类别型，可选值为 “要价”、“价格可议”、“拍卖”、“投标”、“POA”、“出价”、“限期出售”、“其他”）。
+  - listing_date (DATE)：房产的上市日期，用于记录房产实际的上市时间。
+  - square_feet (INTEGER)：房产的建筑面积（平方米）。
+  - land_area (INTEGER)：房产的土地面积（平方米），用于记录土地的实际面积。
+  - construction_year (INTEGER)：房产的建造年份。
+  - ownership_type (TEXT)：产权类型（类别型，可选值为：“全幅地永久产权”、“半幅地永久产权”、“租赁产权”、“公寓/单元房”、“分时度假物业”、“Supplementary record sheet”、“Records embodied in the register”、“Gazette notice”、“Life estate”
+  - government_valuation (REAL)：政府对房产的估价（单位：万元）。
+  - suburb(TEXT): 房产所在的社区或区域名称（例如，“Remuera”）。
+  - district(TEXT): 放在所在的次行政级单位，一个 Region 通常包含多个 District（例如奥克兰地区下的奥克兰市议会（Auckland Council））
+  - region(TEXT): 房产所在的地区/区域，是新西兰最大的行政单元，相当于中国的“省”或“自治区”。比如奥克兰地区（Auckland Region）
+  - open_date(DATE): 房产的开放日期。
+  - Zoning(TEXT): 城市对当地的城市规划(类别型，可选值为："Single house zone"、"Mixed housing suburban zone"、"Mixed housing Urban zone"、"Terrace and apartment zone"、"Rural and coastal zone"、"Large lot zone"、"Other zones"。)
+
+## 表：schools
+- 描述：包含学校的基本信息和评分，支持查询学校附近的房产以及房产的价格影响。
+- 字段：
+   - suburb(TEXT): 学校所在的社区或区域名称（例子，"Remuera"）
+   - district(TEXT): 学校所在的次行政级单位，一个 Region 通常包含多个 District（例如奥克兰地区下的奥克兰市议会（Auckland Council））
+   - region(TEXT): 学校所在的地区/区域，是新西兰最大的行政单元，相当于中国的“省”或“自治区”。比如奥克兰地区（Auckland Region）
+   - name(TEXT): 学校名称
+   - decile(INTEGER): 学校评分，代表学校的质量
+
+## 表：transactions
+- 描述：存储房产交易记录和信息，包括交易日期、交易价格、交易类型等
+- 字段：
+   - property_id (INTEGER)：每个房产的唯一标识符。
+   - transaction_price(INTEGER): 房产的交易价格。
+   - transaction_date(DATE): 房产交易日期。
+
+## 表：property_avm
+- 描述：存储房产的中位价信息
+- 字段：
+	- property_id (INTEGER): 每个房产的唯一标识符。
+	- avmDate （int）：记录中位价估值的计算日期。
+	- avm （bigint）：房产的中位价估值。
+	- avmHigh （bigint）： 表示房产中位价的估值上限。
+	- avmLow  （bigint）： 表示房产中位价的估值下限。
+
+## Bigquery表： reinz_stats_v1
+- 描述： 统计district级别的房产销售数据，包括中位价、销售数量、销售天数、统计日期
+- 字段：
+	date （date）： 统计日期
+	avm （float）： 中位价
+	sold （INTEGER）： 销售数量
+	soldDay （INTEGER）： 销售天数
+
+
+## Bigquery表： census_population_sex_region_by_suburb_v1
+- 描述： 统计区域人口信息，包括总人数、男人数量、女人数量、各个年龄段的数量
+- 字段：
+	- year （INTEGER）： 统计年份
+	- sex1Male （INTEGER）： 男人数量
+	- sex2Female （INTEGER）：女人数量
+	- sexTotal  （INTEGER）： 总人数
+
+
+
+
+
+
+
+
+
+
